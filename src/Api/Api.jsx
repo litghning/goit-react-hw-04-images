@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const key = '32537278-8466db4d076cc3f8d180bd03a';
 
-const fetchGallery = async (nameRequest, page) => {
+const fetchGallery = async (nameRequest, page, controller) => {
   const response = await axios.get('https://pixabay.com/api/', {
     params: {
       key: key,
@@ -12,7 +12,10 @@ const fetchGallery = async (nameRequest, page) => {
       image_type: 'photo',
       orientation: 'horizontal',
     },
-  });
+  },
+  { signal: controller.signal }
+  );
+
   return response.data;
 };
 

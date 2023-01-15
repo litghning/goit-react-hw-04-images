@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import { useState, useEffect } from "react";
 import Searchbar from "./Searchbar";
 import ImageGallery from './ImageGallery/';
 import Loader from './Loader';
@@ -9,35 +9,38 @@ import { ToastContainer, toast } from 'react-toastify';
  import {fetchGallery} from '../Api/Api'
  import LoadMore from "./LoadMore";
  
-class App extends Component {
-  state = {
-    images: [],
-    imgSearch: '',
-    page: 1,
-    isLoading: false,
-    error: null,
-    totalHits: null,
-  };
+export default function App  () {
+ 
+  const [images, setImages] = useState ([]);
+  const [imgSearch, setimgSearch] = useState ('');
+  const [page, setPage] = useState (1);
+  const [isLoading, setIsLoading] = useState (false);
+  // const [error, setError] = useState (null);
+  const [totalHits, setTotalHits] = useState (null);
 
-  searchFormSubmit = imgSearch => {
-    this.setState({
-      imgSearch,
-      page: 1,
-      images: [],
-      totalHits: null,
-    });
-  };
+  const searchFormSubmit = imgSearch => {
+   setimgSearch(imgSearch); 
+   setPage(1);
+   setImages([]);
+   setTotalHits(null);
+    };
+  
 
-  async componentDidUpdate(_, prevState) {
-    if (
-      prevState.imgSearch !== this.state.imgSearch ||
-      prevState.page !== this.state.page 
-    ) {
-      this.setState({ isLoading: true });
+    useEffect(() => {
+      const controller = new AbortController();
+      if (imgSearch === '') {
+        return;
+      }
+  
+
+    async function getImages() {
+    
+       setIsLoading (true) 
       try {
         const images = await fetchGallery(
-          this.state.imgSearch,
-          this.state.page
+          imgSearch,
+          page,
+          controller
         );
 
         const altImages = images.hits.map(
@@ -51,53 +54,50 @@ class App extends Component {
 
         if (images.totalHits === 0) {
           return toast.error('Sorry, didn`t find, try another');
-        }
-        if (this.state.page >= 2) {
-          return this.setState({
-            images: [...prevState.images, ...altImages],
-            totalHits: images.totalHits,
-          });
-        }
-
-        this.setState({
-          images: altImages,
-          totalHits: images.totalHits,
-        });
+        };
+        if (page >= 2) {
+          return (
+            setImages (images => [...images, ...altImages]),
+            setTotalHits (images.totalHits)
+          )};
+          setImages(altImages);
+          setTotalHits(images.totalHits);
+      
       } catch (error) {
-        this.setState({ error });
+        console.log(error.message);
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading (false);
       }
     }
-  }
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
-  showBtnLoadMore = () => {
-    const ShowBtn = this.state.totalHits - this.state.page * 12;
-    if (ShowBtn > 0 && !this.state.isLoading) {
+    getImages();
+    return () => {
+      controller.abort();
+    };
+    }, [imgSearch, page]);
+  
+    const loadMore = ()  => {
+      setPage (page => page + 1)
+    };
+  
+    const showBtnLoadMore = () => {
+    const ShowBtn = totalHits - page * 12;
+    if (ShowBtn > 0 && !isLoading) {
       return true;
     }
     return false;
-  };
-  render() {
-    const { isLoading, images, totalHits } = this.state;
+    };
 
     return (
       <MainApp>
-        <Searchbar onSearch={this.searchFormSubmit} />
+        <Searchbar onSearch={searchFormSubmit} />
         
 
         {totalHits > 0 ? <ImageGallery images={images} /> : null}
 
         {isLoading && <Loader />}
-        {this.showBtnLoadMore() && <LoadMore onClick={this.loadMore} />}
+        {showBtnLoadMore() && <LoadMore onClick={loadMore} />}
         <ToastContainer />
       </MainApp>
     );
-  }
-}
-
-export default App;
+    };
+    

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import  { useState } from 'react';
 import { ImSearch } from 'react-icons/im';
 import { toast } from 'react-toastify';
 import {
@@ -8,36 +8,32 @@ import {
   SearchFormInput,
 } from './Searchbar.styled';
 
-class Searchbar extends Component {
-  state = {
-    searchImgValue: '',
+const Searchbar = ({ onSearch }) => {
+  const [searchImgValue, setSearchImgValue] = useState('');
+  const searchValueChange = e => {
+    setSearchImgValue(e.currentTarget.value.toLowerCase() );
   };
-
-  searchValueChange = e => {
-    this.setState({ searchImgValue: e.currentTarget.value.toLowerCase() });
-  };
-
-  searchSubmit = e => {
+  const searchSubmit = e => {
     e.preventDefault();
-    if (this.state.searchImgValue.trim() === '') {
+
+    if (searchImgValue.trim() === '') {
       toast.error('Please enter some world');
       return;
     }
-    this.props.onSearch(this.state.searchImgValue);
-    this.setState({ searchImgValue: '' });
+    onSearch(searchImgValue);
+    setSearchImgValue('');
   };
-
-  render() {
+ 
     return (
       <SearchbarHeader>
-        <SearchForm onSubmit={this.searchSubmit}>
+        <SearchForm onSubmit={searchSubmit}>
           <SearchFormInput
             type="text"
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
-            onChange={this.searchValueChange}
-            value={this.state.searchImgValue}
+            onChange={searchValueChange}
+            value={searchImgValue}
           />
 
           <SearchFormButton type="submit">
@@ -47,6 +43,6 @@ class Searchbar extends Component {
       </SearchbarHeader>
     );
   }
-}
+
 
 export default Searchbar;
