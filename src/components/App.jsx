@@ -15,7 +15,6 @@ export default function App  () {
   const [imgSearch, setimgSearch] = useState ('');
   const [page, setPage] = useState (1);
   const [isLoading, setIsLoading] = useState (false);
-  // const [error, setError] = useState (null);
   const [totalHits, setTotalHits] = useState (null);
 
   const searchFormSubmit = imgSearch => {
